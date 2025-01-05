@@ -161,13 +161,17 @@ func newBuffer() *bytes.Buffer {
 // filled out appropriately.  In general, clients will want to use
 // Write, rather than WriteMessage.
 func (w *UDPWriter) WriteMessage(m *Message) (err error) {
-	mBuf := newBuffer()
-	defer bufPool.Put(mBuf)
-	if err = m.MarshalJSONBuf(mBuf); err != nil {
+	msg, err := ProcessMessage(m)
+	if err != nil {
 		return err
 	}
-	mBytes := mBuf.Bytes()
+	if err = w.WriteRaw(msg); err != nil {
+		return err
+	}
+	return nil
+}
 
+func (w *UDPWriter) WriteRaw(messageBytes []byte) (err error) {
 	var (
 		zBuf   *bytes.Buffer
 		zBytes []byte
@@ -184,7 +188,7 @@ func (w *UDPWriter) WriteMessage(m *Message) (err error) {
 		defer bufPool.Put(zBuf)
 		zw, err = zlib.NewWriterLevel(zBuf, w.CompressionLevel)
 	case CompressNone:
-		zBytes = mBytes
+		zBytes = messageBytes
 	default:
 		panic(fmt.Sprintf("unknown compression type %d",
 			w.CompressionType))
@@ -193,7 +197,7 @@ func (w *UDPWriter) WriteMessage(m *Message) (err error) {
 		if err != nil {
 			return
 		}
-		if _, err = zw.Write(mBytes); err != nil {
+		if _, err = zw.Write(messageBytes); err != nil {
 			zw.Close()
 			return
 		}
@@ -218,14 +222,12 @@ func (w *UDPWriter) WriteMessage(m *Message) (err error) {
 // Write encodes the given string in a GELF message and sends it to
 // the server specified in New().
 func (w *UDPWriter) Write(p []byte) (n int, err error) {
-	// 1 for the function that called us.
-	file, line := getCallerIgnoringLogMulti(1)
-
-	m := constructMessage(p, w.hostname, w.Facility, file, line)
-
-	if err = w.WriteMessage(m); err != nil {
+	message, err := ProcessLog(p)
+	if err != nil {
 		return 0, err
 	}
-
+	if err = w.WriteRaw(message); err != nil {
+		return 0, err
+	}
 	return len(p), nil
 }

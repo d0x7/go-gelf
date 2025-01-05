@@ -12,6 +12,7 @@ type Writer interface {
 	Close() error
 	Write([]byte) (int, error)
 	WriteMessage(*Message) error
+	WriteRaw([]byte) error
 }
 
 // Writer implements io.Writer and is used to send both discrete
@@ -31,4 +32,22 @@ func (w *GelfWriter) Close() error {
 		return nil
 	}
 	return w.conn.Close()
+}
+
+func ProcessLog(log []byte) (message []byte, err error) {
+	file, line := getCallerIgnoringLogMulti(1)
+	m := constructMessage(log, "", "", file, line)
+
+	return ProcessMessage(m)
+}
+
+func ProcessMessage(msg *Message) (message []byte, err error) {
+	buf := newBuffer()
+	defer bufPool.Put(buf)
+	messageBytes, err := msg.toBytes(buf)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(messageBytes, 0), nil
 }

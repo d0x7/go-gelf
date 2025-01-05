@@ -143,7 +143,6 @@ func constructMessage(p []byte, hostname string, facility string, file string, l
 		Short:    string(short),
 		Full:     string(full),
 		TimeUnix: float64(now.UnixNano()) / float64(time.Second),
-		Level:    6, // info
 		Facility: facility,
 		Extra: map[string]interface{}{
 			"_file": file,

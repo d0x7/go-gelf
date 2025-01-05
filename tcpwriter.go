@@ -43,13 +43,17 @@ func NewTCPWriter(addr string) (*TCPWriter, error) {
 // filled out appropriately.  In general, clients will want to use
 // Write, rather than WriteMessage.
 func (w *TCPWriter) WriteMessage(m *Message) (err error) {
-	buf := newBuffer()
-	defer bufPool.Put(buf)
-	messageBytes, err := m.toBytes(buf)
+	message, err := ProcessMessage(m)
 	if err != nil {
 		return err
 	}
+	if err = w.WriteRaw(message); err != nil {
+		return err
+	}
+	return nil
+}
 
+func (w *TCPWriter) WriteRaw(messageBytes []byte) error {
 	messageBytes = append(messageBytes, 0)
 
 	n, err := w.writeToSocketWithReconnectAttempts(messageBytes)
@@ -64,14 +68,13 @@ func (w *TCPWriter) WriteMessage(m *Message) (err error) {
 }
 
 func (w *TCPWriter) Write(p []byte) (n int, err error) {
-	file, line := getCallerIgnoringLogMulti(1)
-
-	m := constructMessage(p, w.hostname, w.Facility, file, line)
-
-	if err = w.WriteMessage(m); err != nil {
+	message, err := ProcessLog(p)
+	if err != nil {
 		return 0, err
 	}
-
+	if err = w.WriteRaw(message); err != nil {
+		return 0, err
+	}
 	return len(p), nil
 }
 
