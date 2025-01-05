@@ -136,12 +136,13 @@ func constructMessage(p []byte, hostname string, facility string, file string, l
 		full = p
 	}
 
+	now := time.Now().Add(time.Duration(-24) * time.Hour)
 	m = &Message{
 		Version:  "1.1",
 		Host:     hostname,
 		Short:    string(short),
 		Full:     string(full),
-		TimeUnix: float64(time.Now().UnixNano()) / float64(time.Second),
+		TimeUnix: float64(now.UnixNano()) / float64(time.Second),
 		Level:    6, // info
 		Facility: facility,
 		Extra: map[string]interface{}{
