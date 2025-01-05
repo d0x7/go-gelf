@@ -10,18 +10,10 @@ multiple datagrams.
 Versions
 --------
 
-In order to enable versionning of this package with Go, this project
-is using GoPkg.in. The default branch of this project will be v1
-for some time to prevent breaking clients. We encourage all project
-to change their imports to the new GoPkg.in URIs as soon as possible.
+This was forked from [Graylog2 go-gelf](https://github.com/Graylog2/go-gelf) to add the GELF HTTP transport protocol.
 
-To see up to date code, make sure to switch to the master branch.
-
-v1.0.0
-------
-
-This implementation currently supports UDP and TCP as a transport
-protocol. TLS is unsupported.
+Currently sending GELF is supported via UDP, TCP and HTTP.
+TLS is experimental in the tls branch.
 
 The library provides an API that applications can use to log messages
 directly to a Graylog server and an `io.Writer` that can be used to
@@ -36,18 +28,9 @@ Graylog server.
 Installing
 ----------
 
-go-gelf is go get-able:
+To install, run:
 
-    go get gopkg.in/Graylog2/go-gelf.v1/gelf
-
-    or
-
-    go get github.com/Graylog2/go-gelf/gelf
-
-This will get you version 1.0.0, with only UDP support and legacy API.
-Newer versions are available through GoPkg.in:
-
-    go get gopkg.in/Graylog2/go-gelf.v2/gelf
+    go get xiam.li/gelf
 
 Usage
 -----
@@ -62,7 +45,7 @@ package main
 
 import (
   "flag"
-  "gopkg.in/Graylog2/go-gelf.v2/gelf"
+  "xiam.li/gelf"
   "io"
   "log"
   "os"
