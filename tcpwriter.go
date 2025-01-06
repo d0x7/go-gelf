@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path"
 	"sync"
 	"time"
 )
@@ -35,6 +36,7 @@ func NewTCPWriter(addr string) (*TCPWriter, error) {
 		return nil, err
 	}
 
+	w.Facility = path.Base(os.Args[0])
 	return w, nil
 }
 
@@ -54,8 +56,6 @@ func (w *TCPWriter) WriteMessage(m *Message) (err error) {
 }
 
 func (w *TCPWriter) WriteRaw(messageBytes []byte) error {
-	messageBytes = append(messageBytes, 0)
-
 	n, err := w.writeToSocketWithReconnectAttempts(messageBytes)
 	if err != nil {
 		return err
@@ -68,7 +68,7 @@ func (w *TCPWriter) WriteRaw(messageBytes []byte) error {
 }
 
 func (w *TCPWriter) Write(p []byte) (n int, err error) {
-	message, err := ProcessLog(p)
+	message, err := ProcessLog(w.hostname, w.Facility, p)
 	if err != nil {
 		return 0, err
 	}

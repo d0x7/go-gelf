@@ -34,9 +34,9 @@ func (w *GelfWriter) Close() error {
 	return w.conn.Close()
 }
 
-func ProcessLog(log []byte) (message []byte, err error) {
+func ProcessLog(hostname, facility string, log []byte) (message []byte, err error) {
 	file, line := getCallerIgnoringLogMulti(1)
-	m := constructMessage(log, "", "", file, line)
+	m := constructMessage(log, hostname, facility, file, line)
 
 	return ProcessMessage(m)
 }

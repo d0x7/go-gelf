@@ -76,7 +76,6 @@ func NewUDPWriter(addr string) (*UDPWriter, error) {
 	}
 
 	w.Facility = path.Base(os.Args[0])
-
 	return w, nil
 }
 
@@ -222,7 +221,7 @@ func (w *UDPWriter) WriteRaw(messageBytes []byte) (err error) {
 // Write encodes the given string in a GELF message and sends it to
 // the server specified in New().
 func (w *UDPWriter) Write(p []byte) (n int, err error) {
-	message, err := ProcessLog(p)
+	message, err := ProcessLog(w.hostname, w.Facility, p)
 	if err != nil {
 		return 0, err
 	}

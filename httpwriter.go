@@ -28,6 +28,7 @@ func NewHTTPWriter(proto, addr string) (*HTTPWriter, error) {
 		return nil, err
 	}
 
+	w.Facility = os.Args[0]
 	return w, nil
 }
 
@@ -47,8 +48,6 @@ func (w *HTTPWriter) WriteMessage(m *Message) (err error) {
 }
 
 func (w *HTTPWriter) WriteRaw(messageBytes []byte) error {
-	messageBytes = append(messageBytes, 0)
-
 	n, err := w.writeToHTTPWithReconnectAttempts(messageBytes)
 	if err != nil {
 		return err
@@ -61,7 +60,7 @@ func (w *HTTPWriter) WriteRaw(messageBytes []byte) error {
 }
 
 func (w *HTTPWriter) Write(p []byte) (n int, err error) {
-	message, err := ProcessLog(p)
+	message, err := ProcessLog(w.hostname, w.Facility, p)
 	if err != nil {
 		return 0, err
 	}
