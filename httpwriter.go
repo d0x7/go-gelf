@@ -3,6 +3,7 @@ package gelf
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"sync"
@@ -23,6 +24,19 @@ func NewHTTPWriter(proto, addr string) (*HTTPWriter, error) {
 	w.ReconnectDelay = DefaultReconnectDelay
 	w.proto = proto
 	w.addr = fmt.Sprintf("%s://%s/gelf", proto, addr)
+
+	// Check if the server is reachable
+	resp, err := http.Post(fmt.Sprintf("%s://%s", proto, addr), "application/json", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
+
+	if resp.StatusCode != http.StatusNotFound {
+		return nil, fmt.Errorf("graylog responded with non-404 status code %d", resp.StatusCode)
+	}
 
 	if w.hostname, err = os.Hostname(); err != nil {
 		return nil, err
