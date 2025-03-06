@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"time"
 )
 
 // Message represents the contents of the GELF message.  It is gzipped
@@ -14,7 +13,7 @@ type Message struct {
 	Host     string                 `json:"host"`
 	Short    string                 `json:"short_message"`
 	Full     string                 `json:"full_message,omitempty"`
-	TimeUnix float64                `json:"timestamp"`
+	Time     string                 `json:"timestamp,omitzero"`
 	Level    int32                  `json:"level,omitempty"`
 	Facility string                 `json:"facility,omitempty"`
 	Extra    map[string]interface{} `json:"-"`
@@ -97,7 +96,7 @@ func (m *Message) UnmarshalJSON(data []byte) error {
 		case "full_message":
 			m.Full, ok = v.(string)
 		case "timestamp":
-			m.TimeUnix, ok = v.(float64)
+			m.Time, ok = v.(string)
 		case "level":
 			var level float64
 			level, ok = v.(float64)
@@ -136,13 +135,11 @@ func constructMessage(p []byte, hostname string, facility string, file string, l
 		full = p
 	}
 
-	now := time.Now().Add(time.Duration(-24) * time.Hour)
 	m = &Message{
 		Version:  "1.1",
 		Host:     hostname,
 		Short:    string(short),
 		Full:     string(full),
-		TimeUnix: float64(now.UnixNano()) / float64(time.Second),
 		Facility: facility,
 		Extra: map[string]interface{}{
 			"_file": file,
