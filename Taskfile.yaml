@@ -5,3 +5,9 @@ tasks:
     desc: Build the library
     cmds:
       - go build ./...
+  test:
+    desc: Test the library
+    deps:
+      - build
+    cmds:
+      - go test ./...
