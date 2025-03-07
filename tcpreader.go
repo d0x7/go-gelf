@@ -56,7 +56,9 @@ func (r *TCPReader) accepter(connections chan net.Conn) {
 
 func (r *TCPReader) listenUntilCloseSignal(closeSignal chan string, doneSignal chan string) {
 	defer func() { doneSignal <- "done" }()
-	defer r.listener.Close()
+	defer func(listener *net.TCPListener) {
+		_ = listener.Close()
+	}(r.listener)
 	var conns []connChannels
 	connectionsChannel := make(chan net.Conn, 1)
 	go r.accepter(connectionsChannel)
@@ -103,7 +105,9 @@ func (r *TCPReader) addr() string {
 
 func handleConnection(conn net.Conn, messages chan<- []byte, dropSignal chan string, dropConfirm chan string) {
 	defer func() { dropConfirm <- "done" }()
-	defer conn.Close()
+	defer func(conn net.Conn) {
+		_ = conn.Close()
+	}(conn)
 	reader := bufio.NewReader(conn)
 
 	var b []byte
@@ -112,7 +116,7 @@ func handleConnection(conn net.Conn, messages chan<- []byte, dropSignal chan str
 	canDrop := false
 
 	for {
-		conn.SetDeadline(time.Now().Add(2 * time.Second))
+		_ = conn.SetDeadline(time.Now().Add(2 * time.Second))
 		if b, err = reader.ReadBytes(0); err != nil {
 			if drop {
 				return
@@ -152,5 +156,5 @@ func (r *TCPReader) readMessage() (*Message, error) {
 }
 
 func (r *TCPReader) Close() {
-	r.listener.Close()
+	_ = r.listener.Close()
 }

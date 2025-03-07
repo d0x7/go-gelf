@@ -197,10 +197,10 @@ func (w *UDPWriter) WriteRaw(messageBytes []byte) (err error) {
 			return
 		}
 		if _, err = zw.Write(messageBytes); err != nil {
-			zw.Close()
+			_ = zw.Close()
 			return
 		}
-		zw.Close()
+		_ = zw.Close()
 		zBytes = zBuf.Bytes()
 	}
 
