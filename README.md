@@ -44,39 +44,39 @@ giving us both centralized and local logs.  (Redundancy is nice).
 package main
 
 import (
-  "flag"
-  "xiam.li/gelf"
-  "io"
-  "log"
-  "os"
+	"flag"
+	"io"
+	"log"
+	"os"
+	"xiam.li/gelf"
 )
 
 func main() {
-  var graylogAddr string
+	var graylogAddr string
 
-  flag.StringVar(&graylogAddr, "graylog", "", "graylog server addr")
-  flag.Parse()
+	flag.StringVar(&graylogAddr, "graylog", "", "graylog server addr")
+	flag.Parse()
 
-  if graylogAddr != "" {
-          // If using UDP
-    gelfWriter, err := gelf.NewUDPWriter(graylogAddr)
-          // If using TCP
-          //gelfWriter, err := gelf.NewTCPWriter(graylogAddr)
-    if err != nil {
-      log.Fatalf("gelf.NewWriter: %s", err)
-    }
-    // log to both stderr and graylog2
-    log.SetOutput(io.MultiWriter(os.Stderr, gelfWriter))
-    log.Printf("logging to stderr & graylog2@'%s'", graylogAddr)
-  }
+	if graylogAddr != "" {
+		// If using UDP
+		gelfWriter, err := gelf.NewUDPWriter(graylogAddr)
+		// If using TCP
+		//gelfWriter, err := gelf.NewTCPWriter(graylogAddr)
+		if err != nil {
+			log.Fatalf("gelf.NewWriter: %s", err)
+		}
+		// log to both stderr and graylog2
+		log.SetOutput(io.MultiWriter(os.Stderr, gelfWriter))
+		log.Printf("logging to stderr & graylog2@'%s'", graylogAddr)
+	}
 
-  // From here on out, any calls to log.Print* functions
-  // will appear on stdout, and be sent over UDP or TCP to the
-  // specified Graylog2 server.
+	// From here on out, any calls to log.Print* functions
+	// will appear on stdout, and be sent over UDP or TCP to the
+	// specified Graylog2 server.
 
-  log.Printf("Hello gray World")
+	log.Printf("Hello gray World")
 
-  // ...
+	// ...
 }
 ```
 The above program can be invoked as:
